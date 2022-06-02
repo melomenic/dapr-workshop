@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Subscription
+metadata:
+  name: order_pub_sub
+spec:
+  topic: orders
+  route: /orders
+  pubsubname: order_pub_sub
+scopes:
+- make-line-service
+- receipt-generation-service
+- loyalty-service

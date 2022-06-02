@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Vigilantes.DaprWorkshop.OrderService.Models;
 
 namespace Vigilantes.DaprWorkshop.OrderService.Controllers
@@ -33,8 +34,8 @@ namespace Vigilantes.DaprWorkshop.OrderService.Controllers
             var orderSummary = CreateOrderSummary(order);
             _logger.LogInformation("Created Order Summary: {@OrderSummary}", orderSummary);
 
-            // TODO: Challenge 2 - Publish an OrderSummary message via Dapr
-            return Ok("Bummer. Business logic and pub/sub isn't implemented yet but, hey, at least your POST worked and you should see the order in the log! YOINK!");
+            var response = await _httpClient.PostAsync("http://localhost:5180/v1.0/publish/order_pub_sub/orders", new StringContent(JsonConvert.SerializeObject(orderSummary), null, "application/json"));
+            return Ok(response.IsSuccessStatusCode);
         }
 
         private static OrderSummary CreateOrderSummary(CustomerOrder order)
