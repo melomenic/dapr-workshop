@@ -29,7 +29,17 @@ namespace Vigilantes.DaprWorkshop.ReceiptGenerationService.Controllers
 
             _logger.LogInformation("Writing Order Summary (receipt) to storage: {@OrderSummary}", orderSummary);
 
-            // TODO: Challenge 5 - Store receipt via a Dapr Output Binding that can be used as a data sink
+            var receipt = new
+            {
+                operation = "create",
+                data = orderSummary,
+                metadata = new { key = orderSummary.OrderId }
+            };
+
+            var response = await _httpClient.PostAsync($"http://localhost:5380/v1.0/bindings/receipts", new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(receipt), null, "application/json"));
+            response.EnsureSuccessStatusCode();
+
+
             return Ok();
         }
     }
