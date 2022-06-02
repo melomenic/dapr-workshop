@@ -13,7 +13,7 @@ namespace Vigilantes.DaprWorkshop.VirtualBarista.Controllers
     [ApiController]
     public class VirtualBaristaController : ControllerBase
     {
-        public static readonly string StoreId = "1"; //Environment.GetEnvironmentVariable("STORE_ID") ?? "Redmond";
+        public static readonly string StoreId = Environment.GetEnvironmentVariable("STORE_ID") ?? "Redmond";
         public static readonly int MinSecondsToMakeDrink = int.Parse(Environment.GetEnvironmentVariable("MIN_SECONDS_TO_MAKE_DRINK") ?? "3");
         public static readonly int MaxSecondsToMakeDrink = int.Parse(Environment.GetEnvironmentVariable("MAX_SECONDS_TO_MAKE_DRINK") ?? "10");
         private static readonly object DrinkLock = new object();

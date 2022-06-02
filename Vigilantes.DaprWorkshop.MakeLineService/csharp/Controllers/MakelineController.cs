@@ -63,14 +63,12 @@ namespace Vigilantes.DaprWorkshop.MakeLineService.Controllers
             response = await _httpClient.PostAsync($"http://localhost:5280/v1.0/state/orders", new StringContent($"[{JsonConvert.SerializeObject(newOrderItemSummaries)}]", null, "application/json"));
             response.EnsureSuccessStatusCode();
 
-            
-            // TODO: Challenge 6 - Call the SignalR output binding with the incoming order summary
-
+            await SendOrderUpdate("newOrder", orderSummary);
 
             return Ok();
         }
 
-
+        [EnableCors("CorsPolicy")]
         [HttpGet("/orders/{storeId}")]
         public async Task<IActionResult> GetAllOrders(string storeId)
         {
@@ -100,11 +98,15 @@ namespace Vigilantes.DaprWorkshop.MakeLineService.Controllers
                 }
             }
 
+            var completedOrderSummary = orderItemSummaries.First(o => o.OrderId == orderId);
+
             var newOrderItemSummaries = new KeyValuePair<string,List<OrderSummary>>(storeId, orderItemSummaries.Where(o => o.OrderId != orderId).ToList());
             
   
             response = await _httpClient.PostAsync($"http://localhost:5280/v1.0/state/orders", new StringContent($"[{JsonConvert.SerializeObject(newOrderItemSummaries)}]", null, "application/json"));
             response.EnsureSuccessStatusCode();
+
+            await SendOrderUpdate("completedOrder", completedOrderSummary);
 
             return Ok();
         }
@@ -138,20 +140,34 @@ namespace Vigilantes.DaprWorkshop.MakeLineService.Controllers
 
         private async Task<IActionResult> SendOrderUpdate(string eventName, OrderSummary orderSummary)
         {
-            // TODO: Challenge 6 - Send event to SignalR output binding
-            // References: 
-            //    https://github.com/dapr/docs/tree/master/howto/send-events-with-output-bindings
-            //    https://github.com/dapr/docs/blob/master/reference/specs/bindings/signalr.md 
-            //    Option: use the OrderSummaryUpdateData object
+            var osu = new
+            {
+                operation = "create",
+                data = new OrderSummaryUpdateData
+                {
+                    Target = eventName,
+                    Arguments = new List<object>{orderSummary}
+                },
+                metadata = new {hub = "orders"}
+            };
+
+
+
+            var response = await _httpClient.PostAsync($"http://localhost:5280/v1.0/bindings/signalrhub", new StringContent(JsonConvert.SerializeObject(osu), null, "application/json"));
+            _logger.LogCritical("SR Stuff: {@X}", await response.Content.ReadAsStringAsync());
+            response.EnsureSuccessStatusCode();
             
             return new OkResult();
         }
 
         private async Task<string> GetSignalrConnectionString()
         {
-            // TODO: Challenge 6 - Call the secrets component to retrieve the connection string
-            // Reference: https://github.com/dapr/docs/blob/master/reference/api/secrets_api.md
-            return "";
+            var response = await _httpClient.GetAsync($"http://localhost:5280/v1.0/secrets/vault/dapr");
+            response.EnsureSuccessStatusCode();
+
+            var jDoc = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            
+            return jDoc.RootElement.GetProperty("signalr").GetString();
         }
 
     }
