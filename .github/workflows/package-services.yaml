@@ -28,9 +28,9 @@ jobs:
           fi
           echo ::set-output name=version::${VERSION}
           echo ::set-output name=created::$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-          echo ::set-output name=languages::[\"csharp\", \"golang\", \"java\", \"node\"]
+          echo ::set-output name=languages::[\"csharp\"]
           echo ::set-output name=services::[\"LoyaltyService loyalty-service\", \"MakeLineService make-line-service\", \"OrderService order-service\", \"ReceiptGenerationService receipt-generation-service\", \"VirtualBarista virtual-barista\"]
-          echo ::set-output name=repositories::[\"ghcr.io/azurevigilantes/dapr-workshop\", \"ghcr.io/cloudnativegbb/paas-vnext\"]
+          echo ::set-output name=repositories::[\"ghcr.io/melomenic/dapr-workshop\"]
 
   package-services:
     name: Package Services
@@ -92,8 +92,8 @@ jobs:
           file: Vigilantes.DaprWorkshop.UI/Dockerfile
           push: true
           tags: |
-            ghcr.io/azurevigilantes/dapr-workshop/node/ui:latest
-            ghcr.io/azurevigilantes/dapr-workshop/node/ui:${{ needs.set-env.outputs.version }}
+            ghcr.io/melomenic/dapr-workshop/node/ui:latest
+            ghcr.io/melomenic/dapr-workshop/node/ui:${{ needs.set-env.outputs.version }}
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.created=${{ steps.prep.outputs.created }}
